@@ -1,6 +1,6 @@
-# vhl.ink
+# pdg-t3st-redirector
 
-Custom link shortener service using Cloudflare Workers + KV store on your domain. The Workers free tier is quite generous and perfectly suited for this since KV is optimized for high reads and infrequent writes, which is our use case. 
+Custom link shortener service using Cloudflare Workers + KV store on your domain. The Workers free tier is quite generous and perfectly suited for this since KV is optimized for high reads and infrequent writes, which is our use case.
 
 [![Deploy to Cloudflare Workers](https://deploy.workers.cloudflare.com/button)](https://deploy.workers.cloudflare.com/?url=https://github.com/VandyHacks/vhl.ink)
 
@@ -11,6 +11,7 @@ Additionally, it is possible to make a simple form to create short links right f
 ## Usage
 
 ### Creating short links
+
 send POST request with form data `url` and `path` to redirect vhl.ink/path to url.
 
 for authentication, pass a secret key in a `x-preshared-key` header.
@@ -26,6 +27,7 @@ curl --location --request POST "https://vhl.ink" \
     --data-urlencode "url=$URL" \
     --data-urlencode "path=$NAME"
 ```
+
 passing https://github.com/VandyHacks to url, and gh to path will make https://vhl.ink/gh redirect to it (this is a real example).
 
 ### Deleting short links
@@ -65,16 +67,17 @@ Will return a JSON array of keys with one to three properties:
 ```json
   [{ name: "gh", expiration: null, metadata: "https://github.com/VandyHacks/vaken"}, ...]
 ```
+
 (From https://developers.cloudflare.com/workers/runtime-apis/kv#more-detail)
 
 `expiration` and `metadata` are optional.
 
 ### Consuming
 
-this is the easy part, simply open the shortened link in your browser of choice! 
+this is the easy part, simply open the shortened link in your browser of choice!
 
 ## Deploying
 
-Automatically deploys to Cloudflare Workers on push using GitHub Actions. You will only need to modify the account and kv namespace values in [wrangler.toml](wrangler.toml), and set the repo secrets `CF_API_TOKEN` and `SECRET_KEY` (this is the preshared header authentication key) used in the [workflow](.github/workflows/main.yml). 
+Automatically deploys to Cloudflare Workers on push using GitHub Actions. You will only need to modify the account and kv namespace values in [wrangler.toml](wrangler.toml), and set the repo secrets `CF_API_TOKEN` and `SECRET_KEY` (this is the preshared header authentication key) used in the [workflow](.github/workflows/main.yml).
 
 Oh, and run the worker on the route you want your shortener service to be on of course.

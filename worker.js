@@ -1,14 +1,14 @@
-addEventListener('fetch', event => {
-	const { request } = event;
+addEventListener("fetch", (event) => {
+  const { request } = event;
 
-	switch (request.method) {
-		case 'POST':
-			return event.respondWith(handlePOST(request));
-		case 'DELETE':
-			return event.respondWith(handleDELETE(request));
-		default:
-			return event.respondWith(handleRequest(request, event));
-	}
+  switch (request.method) {
+    case "POST":
+      return event.respondWith(handlePOST(request));
+    case "DELETE":
+      return event.respondWith(handleDELETE(request));
+    default:
+      return event.respondWith(handleRequest(request, event));
+  }
 });
 
 const html = `<!DOCTYPE html>
@@ -27,32 +27,34 @@ const html = `<!DOCTYPE html>
  * @param {Request} request
  */
 async function handlePOST(request) {
-	const psk = request.headers.get('x-preshared-key');
-	if (psk !== SECRET_KEY)
-		return new Response('Sorry, bad key.', { status: 403 });
+  const psk = request.headers.get("x-preshared-key");
+  if (psk !== SECRET_KEY)
+    return new Response("Sorry, bad key.", { status: 403 });
 
-	const shortener = new URL(request.url);
-	const data = await request.formData();
-	const redirectURL = data.get('url');
-	const path = data.get('path');
+  const shortener = new URL(request.url);
+  const data = await request.formData();
+  const redirectURL = data.get("url");
+  const path = data.get("path");
 
-	if (!redirectURL || !path)
-		return new Response('`url` and `path` need to be set.', { status: 400 });
+  if (!redirectURL || !path)
+    return new Response("`url` and `path` need to be set.", { status: 400 });
 
-	// validate redirectURL is a URL
-	try {
-		new URL(redirectURL);
-	} catch (e) {
-		if (e instanceof TypeError) 
-			return new Response('`url` needs to be a valid http url.', { status: 400 });
-		else throw e;
-	};
+  // validate redirectURL is a URL
+  try {
+    new URL(redirectURL);
+  } catch (e) {
+    if (e instanceof TypeError)
+      return new Response("`url` needs to be a valid http url.", {
+        status: 400,
+      });
+    else throw e;
+  }
 
-	// will overwrite current path if it exists
-	await LINKS.put(path, redirectURL);
-	return new Response(`${redirectURL} available at ${shortener}${path}`, {
-		status: 201,
-	});
+  // will overwrite current path if it exists
+  await LINKS.put(path, redirectURL);
+  return new Response(`${redirectURL} available at ${shortener}${path}`, {
+    status: 201,
+  });
 }
 
 /**
@@ -60,15 +62,15 @@ async function handlePOST(request) {
  * @param {Request} request
  */
 async function handleDELETE(request) {
-	const psk = request.headers.get('x-preshared-key');
-	if (psk !== SECRET_KEY)
-		return new Response('Sorry, bad key.', { status: 403 });
+  const psk = request.headers.get("x-preshared-key");
+  if (psk !== SECRET_KEY)
+    return new Response("Sorry, bad key.", { status: 403 });
 
-	const url = new URL(request.url);
-	const path = url.pathname.split('/')[1];
-	if (!path) return new Response('Not found', { status: 404 });
-	await LINKS.delete(path);
-	return new Response(`${request.url} deleted!`, { status: 200 });
+  const url = new URL(request.url);
+  const path = url.pathname.split("/")[1];
+  if (!path) return new Response("Not found", { status: 404 });
+  await LINKS.delete(path);
+  return new Response(`${request.url} deleted!`, { status: 200 });
 }
 
 /**
@@ -79,50 +81,28 @@ async function handleDELETE(request) {
  * @param {Request} request
  */
 async function handleRequest(request, event) {
-	const url = new URL(request.url);
-	const path = url.pathname.split('/')[1];
-	if (!path) {
-		// Return list of available shortlinks if user supplies admin credentials.
-		const psk = request.headers.get('x-preshared-key');
-		if (psk === SECRET_KEY) {
-			const { keys } = await LINKS.list();
-			let paths = "";
-			keys.forEach(element => paths += `${element.name}\n`);
-			
-			return new Response(paths, { status: 200 });
-		}
+  const url = new URL(request.url);
+  const path = url.pathname.split("/")[1];
+  if (!path) {
+    // Return list of available shortlinks if user supplies admin credentials.
+    const psk = request.headers.get("x-preshared-key");
+    if (psk === SECRET_KEY) {
+      const { keys } = await LINKS.list();
+      let paths = "";
+      keys.forEach((element) => (paths += `${element.name}\n`));
 
-		return new Response(html, {
-			headers: {
-				'content-type': 'text/html;charset=UTF-8',
-			},
-		});
-	}
-	if (path === 'quack') {
-		const resObject = {
-			text: 'You just got ducked 🦆',
-			response_type: 'in_channel',
-		};
-	
-		// Just hope it works lol
-		await fetch(SLACK_WEBHOOK_QUACK, {
-			method: 'POST',
-			body: JSON.stringify(resObject),
-			headers: { 'Content-Type': 'application/json' },
-		});
-	}
+      return new Response(paths, { status: 200 });
+    }
 
-	const redirectURL = await LINKS.get(path);
-	if (redirectURL) {
-		const analyticsReq = {
-			method: 'POST',
-			body: JSON.stringify({ 'path': path }),
-			headers: { 'Content-Type': 'application/json' },
-		};
-		event.waitUntil(fetch(ANALYTICS_URL, analyticsReq));
+    return new Response(html, {
+      headers: {
+        "content-type": "text/html;charset=UTF-8",
+      },
+    });
+  }
 
-		return Response.redirect(redirectURL, 302);
-	}
+  const redirectURL = await LINKS.get(path);
+  if (redirectURL) return Response.redirect(redirectURL, 302);
 
-	return new Response('URL not found. Sad!', { status: 404 });
+  return new Response("URL not found. Sad!", { status: 404 });
 }

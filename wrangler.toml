@@ -1,9 +1,9 @@
-name = "vhlink"
+name = "pdg-t3st-redirector"
 type = "javascript"
-account_id = "39a76d640a29996bffbd58c36a537c2b"
-workers_dev = true
-route = ""
-zone_id = ""
+account_id = "257d9994d1e15e8fbeb6053f590ad96b"
+workers_dev = false
+route = "t3st.games/l/*"
+zone_id = "32e2f76c4ca51f635922c3ca9726083b"
 kv_namespaces = [
-  { binding = "LINKS", id = "77612e844ef647009a28a1153fcd0a96", preview_id = "77612e844ef647009a28a1153fcd0a96" }
+  { binding = "LINKS", id = "a08d8f58b1124e45891c64b39fbebdb5" }
 ]
