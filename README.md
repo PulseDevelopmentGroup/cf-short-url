@@ -1,4 +1,4 @@
-# pdg-t3st-redirector
+# t3st-redirector
 
 Custom link shortener service using Cloudflare Workers + KV store on your domain. The Workers free tier is quite generous and perfectly suited for this since KV is optimized for high reads and infrequent writes, which is our use case.
 
